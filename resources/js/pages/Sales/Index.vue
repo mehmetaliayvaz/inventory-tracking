@@ -59,18 +59,20 @@
           </div>
 
           <div v-else class="divide-y divide-gray-100">
-            <div v-for="(item, index) in cart" :key="item.productId" class="flex items-center gap-3 py-3">
-              <div class="flex-1 min-w-0">
-                <div class="font-semibold text-gray-800 text-sm truncate">{{ item.name }}</div>
-                <div class="text-xs text-gray-500">{{ formatPrice(item.price) }} x {{ item.quantity }}</div>
+            <div v-for="(item, index) in cart" :key="item.productId" class="py-3">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold text-gray-800 text-sm truncate">{{ item.name }}</div>
+                  <div class="text-xs text-gray-500">{{ formatPrice(item.price) }} x {{ item.quantity }}</div>
+                </div>
+                <div class="font-semibold text-gray-800 shrink-0">{{ formatPrice(item.price * item.quantity) }}</div>
+                <Button icon="pi pi-times" class="p-button-text p-button-danger p-button-sm shrink-0" @click="removeFromCart(index)" />
               </div>
-              <div class="flex items-center gap-1">
+              <div class="flex items-center gap-2 mt-2">
                 <Button icon="pi pi-minus" class="p-button-text p-button-danger p-button-sm" @click="decreaseQuantity(index)" />
-                <InputNumber v-model="item.quantity" :min="1" :useGrouping="false" style="width: 4rem" @update:modelValue="() => clampStock(index)" />
+                <InputNumber v-model="item.quantity" :min="1" :useGrouping="false" style="width: 4.5rem" @update:modelValue="() => clampStock(index)" />
                 <Button icon="pi pi-plus" class="p-button-text p-button-sm" @click="increaseQuantity(index)" />
               </div>
-              <div class="w-24 text-right font-semibold text-gray-800">{{ formatPrice(item.price * item.quantity) }}</div>
-              <Button icon="pi pi-times" class="p-button-text p-button-danger p-button-sm" @click="removeFromCart(index)" />
             </div>
           </div>
 

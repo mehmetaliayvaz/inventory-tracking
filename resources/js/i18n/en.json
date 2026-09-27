@@ -133,6 +133,7 @@
   "receipt.title": "Sales Receipt",
   "receipt.total": "TOTAL",
   "receipt.thanks": "Thank you for choosing us!",
+  "receipt.no-cash-value": "No cash value",
 
   "categories.title": "Categories",
   "categories.add": "Add Category",
@@ -157,6 +158,10 @@
   "brands.load-error": "Failed to load brands.",
 
   "settings.title": "Settings",
+  "settings.company-title": "Company Information",
+  "settings.company-name": "Company Name",
+  "settings.company-name-hint": "This name will appear on receipts and printouts.",
+  "settings.company-updated": "Company name updated.",
   "settings.language": "Language",
   "settings.language-hint": "Select the application language.",
   "settings.language.tr": "Türkçe",

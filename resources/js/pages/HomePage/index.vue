@@ -1,13 +1,13 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <h2 class="text-lg font-semibold text-gray-700">{{ t("dash.welcome") }}, {{ user?.name }}</h2>
         <p class="text-sm text-gray-500 mt-0.5">{{ formattedToday }}</p>
       </div>
-      <div class="flex gap-2">
-        <Button v-if="isAdmin" :label="t('dash.add-product')" icon="pi pi-plus" @click="router.push({ name: 'products.add' })" />
-        <Button :label="t('dash.new-sale')" icon="pi pi-shopping-cart" class="p-button-outlined" @click="router.push({ name: 'sales' })" />
+      <div class="flex flex-wrap gap-2">
+        <Button v-if="isAdmin" :label="t('dash.add-product')" icon="pi pi-plus" class="w-full sm:w-auto" @click="router.push({ name: 'products.add' })" />
+        <Button :label="t('dash.new-sale')" icon="pi pi-shopping-cart" class="p-button-outlined w-full sm:w-auto" @click="router.push({ name: 'sales' })" />
       </div>
     </div>
 

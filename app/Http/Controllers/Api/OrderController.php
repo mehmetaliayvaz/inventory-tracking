@@ -12,7 +12,7 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $orders = Order::with('items')
+        $orders = Order::with('items', 'company')
             ->where('company_id', $request->user()->company_id)
             ->orderBy('id', 'desc')
             ->get();
@@ -66,7 +66,7 @@ class OrderController extends Controller
         });
 
         return response()->json([
-            'data' => $order->load('items')
+            'data' => $order->load('items', 'company')
         ], 201);
     }
 }

@@ -4,6 +4,16 @@
       <h2 class="text-lg font-semibold text-gray-700">{{ t("settings.title") }}</h2>
     </div>
 
+    <!-- Şirket bilgileri (admin) -->
+    <div v-if="isAdmin" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <h3 class="font-semibold text-gray-800 mb-1">{{ t("settings.company-title") }}</h3>
+      <p class="text-sm text-gray-500 mb-4">{{ t("settings.company-name-hint") }}</p>
+      <form @submit.prevent="saveCompanyName" class="flex flex-col sm:flex-row gap-3">
+        <InputText v-model="companyName" class="flex-1" :placeholder="t('settings.company-name')" />
+        <Button type="submit" :label="t('common.save')" icon="pi pi-check" :loading="savingCompany" class="w-full sm:w-auto" />
+      </form>
+    </div>
+
     <!-- Dil seçimi -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <h3 class="font-semibold text-gray-800 mb-1">{{ t("settings.language") }}</h3>
@@ -13,9 +23,9 @@
 
     <!-- Üye yönetimi (admin) -->
     <div v-if="isAdmin" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div class="flex items-center justify-between mb-1">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-1">
         <h3 class="font-semibold text-gray-800">{{ t("settings.team") }}</h3>
-        <Button :label="t('settings.member.add')" icon="pi pi-user-plus" @click="openMemberDialog()" />
+        <Button :label="t('settings.member.add')" icon="pi pi-user-plus" class="w-full sm:w-auto" @click="openMemberDialog()" />
       </div>
       <p class="text-sm text-gray-500 mb-4">{{ t("settings.team-hint") }}</p>
 
@@ -23,7 +33,8 @@
         <i class="pi pi-spin pi-spinner mr-2"></i>{{ t("common.loading") }}
       </div>
 
-      <DataTable v-else :value="members" dataKey="id" class="p-datatable-sm">
+      <div v-else class="overflow-x-auto">
+        <DataTable :value="members" dataKey="id" class="p-datatable-sm">
         <Column field="name" :header="t('settings.member.name')">
           <template #body="{ data }">
             <div class="flex items-center gap-3">
@@ -60,7 +71,8 @@
             />
           </template>
         </Column>
-      </DataTable>
+        </DataTable>
+      </div>
 
       <div v-if="!loading && members.length === 0" class="py-10 text-center text-gray-500">
         {{ t("settings.member.empty") }}
@@ -68,7 +80,7 @@
     </div>
 
     <!-- Üye ekleme dialogu -->
-    <Dialog v-model:visible="memberDialogVisible" :header="t('settings.member.add')" modal :style="{ width: '440px' }">
+    <Dialog v-model:visible="memberDialogVisible" :header="t('settings.member.add')" modal :style="{ width: 'min(440px, 92vw)' }">
       <form @submit.prevent="saveMember" class="space-y-4">
         <div>
           <label for="member-name" class="block text-sm font-semibold mb-1.5 text-gray-700">{{ t("settings.member.name") }}</label>
@@ -108,12 +120,32 @@ import Column from "primevue/column"
 import Dialog from "primevue/dialog"
 import { useToast } from "primevue/usetoast"
 import api from "../../api"
-import { user } from "../../composables/useAuth"
+import { user, fetchUser } from "../../composables/useAuth"
 import { t, setLocale, getLocale } from "../../i18n"
 
 const toast = useToast()
 
 const isAdmin = computed(() => user.value?.role === "admin")
+
+const companyName = ref(user.value?.company?.name || "")
+const savingCompany = ref(false)
+
+async function saveCompanyName() {
+  if (!companyName.value.trim()) return
+  savingCompany.value = true
+  try {
+    await api.put("/company", { name: companyName.value })
+    await fetchUser()
+    toast.add({ severity: "success", summary: t("settings.company-title"), detail: t("settings.company-updated"), life: 3000 })
+  } catch (error) {
+    const msg = error.response && error.response.data.errors
+      ? Object.values(error.response.data.errors)[0][0]
+      : t("settings.error")
+    toast.add({ severity: "error", summary: t("settings.company-title"), detail: msg, life: 4000 })
+  } finally {
+    savingCompany.value = false
+  }
+}
 
 const languageOptions = computed(() => [
   { label: t("settings.language.tr"), value: "tr" },

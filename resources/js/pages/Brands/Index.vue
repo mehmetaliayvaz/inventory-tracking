@@ -1,11 +1,13 @@
 <template>
-  <div class="max-w-3xl space-y-6">
-    <div class="flex items-center justify-between">
+  <div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <h2 class="text-lg font-semibold text-gray-700">{{ t("brands.title") }}</h2>
         <p class="text-sm text-gray-500 mt-0.5">{{ t("brands.count", { count: brands.length }) }}</p>
       </div>
-      <Button :label="t('brands.add')" icon="pi pi-plus" @click="openDialog()" />
+      <div class="flex flex-wrap gap-2">
+        <Button :label="t('brands.add')" icon="pi pi-plus" class="w-full sm:w-auto" @click="openDialog()" />
+      </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
@@ -13,7 +15,8 @@
         <i class="pi pi-spin pi-spinner mr-2"></i>{{ t("common.loading") }}
       </div>
 
-      <DataTable v-else :value="brands" dataKey="id">
+      <div v-else class="overflow-x-auto">
+        <DataTable :value="brands" dataKey="id">
         <Column field="id" header="#" style="width: 70px">
           <template #body="{ data }">
             <span class="text-gray-400">{{ data.id }}</span>
@@ -33,7 +36,8 @@
             </div>
           </template>
         </Column>
-      </DataTable>
+        </DataTable>
+      </div>
 
       <div v-if="!loading && brands.length === 0" class="py-16 text-center text-gray-500">
         <i class="pi pi-bookmark text-4xl text-gray-300 block mb-3"></i>
@@ -41,7 +45,7 @@
       </div>
     </div>
 
-    <Dialog v-model:visible="dialogVisible" :header="editing ? t('common.edit') : t('brands.add')" modal :style="{ width: '420px' }">
+    <Dialog v-model:visible="dialogVisible" :header="editing ? t('common.edit') : t('brands.add')" modal :style="{ width: 'min(420px, 92vw)' }">
       <form @submit.prevent="saveBrand" class="space-y-4">
         <div>
           <label for="brand-name" class="block text-sm font-semibold mb-1.5 text-gray-700">{{ t("brands.name") }}</label>

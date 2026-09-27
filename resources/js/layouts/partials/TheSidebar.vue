@@ -1,7 +1,10 @@
 <template>
-  <aside class="w-64 bg-slate-900 text-white flex flex-col shrink-0 min-h-screen sticky top-0 h-screen">
+  <aside
+    class="w-64 bg-slate-900 text-white flex flex-col shrink-0 h-screen fixed inset-y-0 left-0 z-40 transition-transform duration-200 lg:sticky lg:top-0 lg:translate-x-0"
+    :class="open ? 'translate-x-0' : '-translate-x-full'"
+  >
     <div class="h-16 flex items-center gap-3 px-5 border-b border-white/10 shrink-0">
-      <div class="w-9 h-9 rounded-lg bg-amber-400 flex items-center justify-center text-slate-900 font-extrabold text-lg">S</div>
+      <div class="w-9 h-9 rounded-lg bg-amber-400 flex items-center justify-center text-slate-900 font-extrabold text-lg shrink-0">S</div>
       <div class="min-w-0">
         <div class="font-bold text-lg tracking-tight truncate">{{ t("app.name") }}</div>
         <div v-if="user?.company" class="text-xs text-gray-400 truncate">{{ user.company.name }}</div>
@@ -15,6 +18,7 @@
         :to="item.route"
         class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors"
         :class="isActive(item.route) ? 'bg-amber-400 text-slate-900' : 'text-gray-300 hover:bg-white/10 hover:text-white'"
+        @click="handleNavigate"
       >
         <i :class="['pi', item.icon, 'text-base']"></i>
         <span>{{ t(item.titleKey) }}</span>
@@ -48,6 +52,11 @@ import { useRoute, useRouter } from "vue-router"
 import Button from "primevue/button"
 import { user, logout } from "../../composables/useAuth"
 import { t } from "../../i18n"
+
+const props = defineProps({
+  open: { type: Boolean, default: false },
+})
+const emit = defineEmits(["close"])
 
 const route = useRoute()
 const router = useRouter()
@@ -84,8 +93,13 @@ function isActive(target) {
   return route.path.startsWith(target)
 }
 
+function handleNavigate() {
+  emit("close")
+}
+
 async function handleLogout() {
   await logout()
+  emit("close")
   router.push({ name: "login" })
 }
 </script>

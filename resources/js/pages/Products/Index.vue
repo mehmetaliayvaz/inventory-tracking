@@ -1,11 +1,13 @@
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div>
         <h2 class="text-lg font-semibold text-gray-700">{{ t("products.title") }}</h2>
         <p class="text-sm text-gray-500 mt-0.5">{{ t("products.count", { count: products.length }) }}</p>
       </div>
-      <Button v-if="isAdmin" :label="t('products.add')" icon="pi pi-plus" @click="router.push({ name: 'products.add' })" />
+      <div class="flex flex-wrap gap-2">
+        <Button v-if="isAdmin" :label="t('products.add')" icon="pi pi-plus" class="w-full sm:w-auto" @click="router.push({ name: 'products.add' })" />
+      </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
@@ -20,16 +22,16 @@
         <i class="pi pi-spin pi-spinner mr-2"></i>{{ t("common.loading") }}
       </div>
 
-      <DataTable
-        v-else
-        :value="products"
-        paginator
-        :rows="10"
-        :rowsPerPageOptions="[10, 20, 50]"
-        dataKey="id"
-        class="p-datatable-sm"
-        @row-click="(event) => openProduct(event.data.id)"
-      >
+      <div v-else class="overflow-x-auto">
+        <DataTable
+          :value="products"
+          paginator
+          :rows="10"
+          :rowsPerPageOptions="[10, 20, 50]"
+          dataKey="id"
+          class="p-datatable-sm"
+          @row-click="(event) => openProduct(event.data.id)"
+        >
         <Column field="image" header="" style="width: 70px">
           <template #body="{ data }">
             <product-image :src="data.image" size="sm" />
@@ -75,7 +77,8 @@
             </div>
           </template>
         </Column>
-      </DataTable>
+        </DataTable>
+      </div>
 
       <div v-if="!loading && products.length === 0" class="py-16 text-center text-gray-500">
         <i class="pi pi-box text-4xl text-gray-300 block mb-3"></i>

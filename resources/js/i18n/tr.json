@@ -133,6 +133,7 @@
   "receipt.title": "Satış Fişi",
   "receipt.total": "TOPLAM",
   "receipt.thanks": "Bizi tercih ettiğiniz için teşekkürler!",
+  "receipt.no-cash-value": "Mali değeri yoktur",
 
   "categories.title": "Kategoriler",
   "categories.add": "Kategori Ekle",
@@ -157,6 +158,10 @@
   "brands.load-error": "Markalar yüklenemedi.",
 
   "settings.title": "Ayarlar",
+  "settings.company-title": "Şirket Bilgileri",
+  "settings.company-name": "Şirket Adı",
+  "settings.company-name-hint": "Fiş ve yazdırmalarda bu ad görünür.",
+  "settings.company-updated": "Şirket adı güncellendi.",
   "settings.language": "Dil",
   "settings.language-hint": "Uygulama dilini seçin.",
   "settings.language.tr": "Türkçe",

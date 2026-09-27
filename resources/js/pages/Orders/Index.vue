@@ -1,8 +1,10 @@
 <template>
   <div class="space-y-6">
-    <div>
-      <h2 class="text-lg font-semibold text-gray-700">{{ t("orders.title") }}</h2>
-      <p class="text-sm text-gray-500 mt-0.5">{{ t("orders.count", { count: orders.length }) }}</p>
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700">{{ t("orders.title") }}</h2>
+        <p class="text-sm text-gray-500 mt-0.5">{{ t("orders.count", { count: orders.length }) }}</p>
+      </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
@@ -10,7 +12,8 @@
         <i class="pi pi-spin pi-spinner mr-2"></i>{{ t("common.loading") }}
       </div>
 
-      <DataTable v-else :value="orders" paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" dataKey="id">
+      <div v-else class="overflow-x-auto">
+        <DataTable :value="orders" paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" dataKey="id">
         <Column field="id" :header="t('orders.no')" style="width: 90px">
           <template #body="{ data }">
             <span class="font-semibold text-gray-800">#{{ data.id }}</span>
@@ -37,7 +40,8 @@
             </div>
           </template>
         </Column>
-      </DataTable>
+        </DataTable>
+      </div>
 
       <div v-if="!loading && orders.length === 0" class="py-16 text-center text-gray-500">
         <i class="pi pi-receipt text-4xl text-gray-300 block mb-3"></i>
@@ -45,7 +49,7 @@
       </div>
     </div>
 
-    <Dialog v-model:visible="dialogVisible" :header="t('orders.detail')" modal :style="{ width: '90mm' }">
+    <Dialog v-model:visible="dialogVisible" :header="t('orders.detail')" modal :style="{ width: 'min(90mm, 92vw)' }">
       <div v-if="selectedOrder" class="flex justify-center">
         <receipt-preview :order="selectedOrder" />
       </div>
