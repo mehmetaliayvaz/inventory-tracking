@@ -1,53 +1,56 @@
 <template>
-  <div class="page-wrapper">
-    <div class="container">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Sipariş Geçmişi</h1>
-        <p class="text-gray-500 text-sm mt-1">{{ orders.length }} sipariş</p>
+  <div class="space-y-6">
+    <div>
+      <h2 class="text-lg font-semibold text-gray-700">{{ t("orders.title") }}</h2>
+      <p class="text-sm text-gray-500 mt-0.5">{{ t("orders.count", { count: orders.length }) }}</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div v-if="loading" class="py-16 text-center text-gray-500">
+        <i class="pi pi-spin pi-spinner mr-2"></i>{{ t("common.loading") }}
       </div>
 
-      <div class="bg-white shadow rounded-xl p-4">
-        <div v-if="loading" class="py-10 text-center text-gray-500">Yükleniyor...</div>
+      <DataTable v-else :value="orders" paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" dataKey="id">
+        <Column field="id" :header="t('orders.no')" style="width: 90px">
+          <template #body="{ data }">
+            <span class="font-semibold text-gray-800">#{{ data.id }}</span>
+          </template>
+        </Column>
+        <Column field="created_at" :header="t('orders.date')" style="width: 180px">
+          <template #body="{ data }">{{ formatDate(data.created_at) }}</template>
+        </Column>
+        <Column field="items" :header="t('orders.items')" style="width: 170px">
+          <template #body="{ data }">
+            {{ t("orders.items-detail", { items: data.items.length, quantity: totalQuantity(data.items) }) }}
+          </template>
+        </Column>
+        <Column field="total" :header="t('orders.total')" style="width: 130px">
+          <template #body="{ data }">
+            <span class="font-semibold text-gray-800">{{ formatPrice(data.total) }}</span>
+          </template>
+        </Column>
+        <Column :header="t('common.actions')" style="width: 220px">
+          <template #body="{ data }">
+            <div class="flex gap-2">
+              <Button :label="t('orders.view')" icon="pi pi-eye" size="small" @click="viewOrder(data)" />
+              <Button :label="t('orders.print')" icon="pi pi-print" size="small" outlined @click="printOrder(data)" />
+            </div>
+          </template>
+        </Column>
+      </DataTable>
 
-        <DataTable v-else :value="orders" paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" dataKey="id">
-          <Column field="id" header="No" style="width: 80px">
-            <template #body="{ data }">#{{ data.id }}</template>
-          </Column>
-          <Column field="created_at" header="Tarih" style="width: 170px">
-            <template #body="{ data }">{{ formatDate(data.created_at) }}</template>
-          </Column>
-          <Column field="items" header="Ürünler" style="width: 150px">
-            <template #body="{ data }">
-              {{ data.items.length }} kalem ({{ totalQuantity(data.items) }} adet)
-            </template>
-          </Column>
-          <Column field="total" header="Toplam" style="width: 130px">
-            <template #body="{ data }">
-              <span class="font-semibold">{{ formatPrice(data.total) }}</span>
-            </template>
-          </Column>
-          <Column header="İşlem" style="width: 230px">
-            <template #body="{ data }">
-              <div class="flex gap-2">
-                <Button label="Görüntüle" icon="pi pi-eye" size="small" @click="viewOrder(data)" />
-                <Button label="Yazdır" icon="pi pi-print" size="small" outlined @click="printOrder(data)" />
-              </div>
-            </template>
-          </Column>
-        </DataTable>
-
-        <div v-if="!loading && orders.length === 0" class="py-10 text-center text-gray-500">
-          Henüz sipariş yok.
-        </div>
+      <div v-if="!loading && orders.length === 0" class="py-16 text-center text-gray-500">
+        <i class="pi pi-receipt text-4xl text-gray-300 block mb-3"></i>
+        {{ t("orders.empty") }}
       </div>
     </div>
 
-    <Dialog v-model:visible="dialogVisible" header="Sipariş Detayı" modal :style="{ width: '90mm' }">
+    <Dialog v-model:visible="dialogVisible" :header="t('orders.detail')" modal :style="{ width: '90mm' }">
       <div v-if="selectedOrder" class="flex justify-center">
         <receipt-preview :order="selectedOrder" />
       </div>
       <div v-if="selectedOrder" class="mt-4">
-        <Button label="Yazdır" icon="pi pi-print" class="w-full" @click="printOrder(selectedOrder)" />
+        <Button :label="t('orders.print')" icon="pi pi-print" class="w-full" @click="printOrder(selectedOrder)" />
       </div>
     </Dialog>
 
@@ -66,6 +69,7 @@ import Dialog from "primevue/dialog"
 import { useToast } from "primevue/usetoast"
 import api from "../../api"
 import ReceiptPreview from "../Sales/partials/ReceiptPreview.vue"
+import { t, getLocale } from "../../i18n"
 
 const toast = useToast()
 
@@ -81,7 +85,7 @@ async function loadOrders() {
     const { data } = await api.get("/orders")
     orders.value = data.data
   } catch (error) {
-    toast.add({ severity: "error", summary: "Hata", detail: "Siparişler yüklenemedi.", life: 3000 })
+    toast.add({ severity: "error", summary: t("orders.title"), detail: t("orders.load-error"), life: 3000 })
   } finally {
     loading.value = false
   }
@@ -104,13 +108,13 @@ function totalQuantity(items) {
 }
 
 function formatPrice(value) {
-  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value)
+  return new Intl.NumberFormat(getLocale() === "en" ? "en-US" : "tr-TR", { style: "currency", currency: "TRY" }).format(value)
 }
 
 function formatDate(value) {
-  return new Date(value).toLocaleDateString("tr-TR", {
+  return new Date(value).toLocaleDateString(getLocale() === "en" ? "en-US" : "tr-TR", {
     day: "2-digit",
-    month: "2-digit",
+    month: "short",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",

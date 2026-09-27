@@ -1,10 +1,12 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\BrandController;
+use App\Http\Controllers\Api\TeamMemberController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,12 +26,34 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    Route::controller(ProductController::class)->group(function () {
-        Route::get('/products', 'index');
-        Route::get('/products/{id}', 'show');
-        Route::post('/products', 'store');
-        Route::put('/products/{id}', 'update');
-        Route::delete('/products/{id}', 'destroy');
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{id}', [ProductController::class, 'show']);
+
+    Route::middleware('admin')->group(function () {
+        Route::post('/products', [ProductController::class, 'store']);
+        Route::put('/products/{id}', [ProductController::class, 'update']);
+        Route::delete('/products/{id}', [ProductController::class, 'destroy']);
+
+        Route::controller(CategoryController::class)->group(function () {
+            Route::get('/categories', 'index');
+            Route::post('/categories', 'store');
+            Route::put('/categories/{id}', 'update');
+            Route::delete('/categories/{id}', 'destroy');
+        });
+
+        Route::controller(BrandController::class)->group(function () {
+            Route::get('/brands', 'index');
+            Route::post('/brands', 'store');
+            Route::put('/brands/{id}', 'update');
+            Route::delete('/brands/{id}', 'destroy');
+        });
+
+        Route::controller(TeamMemberController::class)->group(function () {
+            Route::get('/users', 'index');
+            Route::post('/users', 'store');
+            Route::put('/users/{id}', 'update');
+            Route::delete('/users/{id}', 'destroy');
+        });
     });
 
     Route::controller(OrderController::class)->group(function () {

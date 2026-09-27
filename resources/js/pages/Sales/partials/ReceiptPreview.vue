@@ -1,17 +1,20 @@
 <template>
-  <div class="receipt bg-white text-gray-900">
-    <div class="text-center text-lg mb-2">
-      <div class="text-2xl font-bold">STOK-TAKİP</div>
-      <div>Sipariş Bilgisi</div>
+  <div
+    class="receipt bg-white text-gray-900"
+    style="width: 58mm; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.5; box-sizing: border-box"
+  >
+    <div class="text-center mb-2">
+      <div style="font-size: 18px; font-weight: bold">{{ t("app.name") }}</div>
+      <div>{{ t("receipt.title") }}</div>
       <div>#{{ order.id }}</div>
       <div>{{ formatDate(order.created_at) }}</div>
     </div>
 
     <div class="dashed-line"></div>
 
-    <div v-for="item in order.items" :key="item.id" class="mb-4">
-      <div class="text-xl font-bold">{{ item.name }}</div>
-      <div class="flex justify-between text-lg font-semibold">
+    <div v-for="item in order.items" :key="item.id" class="mb-1">
+      <div class="font-semibold">{{ item.name }}</div>
+      <div class="flex justify-between">
         <span>{{ item.quantity }} x {{ formatPrice(item.price) }}</span>
         <span>{{ formatPrice(item.price * item.quantity) }}</span>
       </div>
@@ -19,18 +22,22 @@
 
     <div class="dashed-line"></div>
 
-    <div class="flex justify-between font-bold" style="font-size: 20px">
-      <span>TOPLAM</span>
+    <div class="flex justify-between font-bold" style="font-size: 16px">
+      <span>{{ t("receipt.total") }}</span>
       <span>{{ formatPrice(order.total) }}</span>
     </div>
 
     <div class="dashed-line"></div>
 
-    <div class="text-center" style="font-size: 16px; margin-top: 4px">Bizi tercih ettiğiniz için teşekkürler!</div>
+    <div class="text-center" style="font-size: 12px; margin-top: 4px">
+      {{ t("receipt.thanks") }}
+    </div>
   </div>
 </template>
 
 <script setup>
+import { t, getLocale } from "../../../i18n"
+
 defineProps({
   order: {
     type: Object,
@@ -39,20 +46,17 @@ defineProps({
 })
 
 function formatPrice(value) {
-  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value)
+  return new Intl.NumberFormat(getLocale() === "en" ? "en-US" : "tr-TR", { style: "currency", currency: "TRY" }).format(value)
 }
 
 function formatDate(value) {
   const date = new Date(value)
   const options = { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }
-  return new Intl.DateTimeFormat("tr-TR", options).format(date)
+  return new Intl.DateTimeFormat(getLocale() === "en" ? "en-US" : "tr-TR", options).format(date)
 }
 </script>
 
 <style scoped>
-.receipt {
-  width: 64mm;
-}
 .dashed-line {
   border-top: 1px dashed #9ca3af;
   margin: 8px 0;

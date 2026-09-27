@@ -11,12 +11,18 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'company_id',
         'total',
     ];
 
     protected $casts = [
         'total' => 'decimal:2',
     ];
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 
     public function user()
     {

@@ -16,6 +16,7 @@
     "dependencies": {
         "@tabler/icons-vue": "^2.46.0",
         "@vitejs/plugin-vue": "^5.0.3",
+        "primeicons": "^8.0.2",
         "primevue": "^3.47.2",
         "vue": "^3.4.15",
         "vue-router": "^4.2.5"

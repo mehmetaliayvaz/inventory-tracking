@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,13 +17,20 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
+            'company_name' => 'required|string|max:255',
+        ]);
+
+        $company = Company::create([
+            'name' => $validated['company_name'],
         ]);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-        ]);
+            'role' => 'admin',
+            'company_id' => $company->id,
+        ])->load('company');
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
@@ -41,7 +49,7 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        $user = User::with('company')->where('email', $validated['email'])->first();
 
         if (!$user || !Hash::check($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
@@ -62,7 +70,7 @@ class AuthController extends Controller
     public function user(Request $request)
     {
         return response()->json([
-            'data' => $request->user(),
+            'data' => $request->user()->load('company'),
         ], 200);
     }
 

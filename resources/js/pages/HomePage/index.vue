@@ -1,71 +1,68 @@
 <template>
-  <div class="page-wrapper">
-    <div class="container">
-      <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
-        <p class="text-gray-500 text-sm mt-1">Hoş geldiniz, {{ user?.name }}</p>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700">{{ t("dash.welcome") }}, {{ user?.name }}</h2>
+        <p class="text-sm text-gray-500 mt-0.5">{{ formattedToday }}</p>
       </div>
+      <div class="flex gap-2">
+        <Button v-if="isAdmin" :label="t('dash.add-product')" icon="pi pi-plus" @click="router.push({ name: 'products.add' })" />
+        <Button :label="t('dash.new-sale')" icon="pi pi-shopping-cart" class="p-button-outlined" @click="router.push({ name: 'sales' })" />
+      </div>
+    </div>
 
-      <div class="grid grid-cols-4 gap-5 mb-8">
-        <div class="bg-white shadow rounded-xl p-5">
-          <div class="text-sm text-gray-500 mb-1">Toplam Ürün</div>
-          <div class="text-2xl font-bold text-gray-800">{{ stats.totalProducts }}</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div v-for="card in statCards" :key="card.labelKey" class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-lg flex items-center justify-center" :class="card.iconClass">
+          <i :class="['pi', card.icon]"></i>
         </div>
-        <div class="bg-white shadow rounded-xl p-5">
-          <div class="text-sm text-gray-500 mb-1">Toplam Stok</div>
-          <div class="text-2xl font-bold text-gray-800">{{ stats.totalStock }}</div>
-        </div>
-        <div class="bg-white shadow rounded-xl p-5">
-          <div class="text-sm text-gray-500 mb-1">Toplam Sipariş</div>
-          <div class="text-2xl font-bold text-gray-800">{{ stats.totalOrders }}</div>
-        </div>
-        <div class="bg-white shadow rounded-xl p-5">
-          <div class="text-sm text-gray-500 mb-1">Stok Değeri</div>
-          <div class="text-2xl font-bold text-gray-800">{{ formatPrice(stats.stockValue) }}</div>
+        <div>
+          <div class="text-sm text-gray-500">{{ t(card.labelKey) }}</div>
+          <div class="text-2xl font-bold text-gray-800">{{ card.value }}</div>
         </div>
       </div>
+    </div>
 
-      <div class="grid grid-cols-2 gap-5">
-        <div class="bg-white shadow rounded-xl p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="font-semibold text-gray-700">Son Ürünler</h2>
-            <router-link to="/products" class="text-blue-600 text-sm hover:underline">Tümünü Gör</router-link>
-          </div>
-          <div v-if="recentProducts.length === 0" class="text-gray-400 text-center py-6 text-sm">Henüz ürün yok.</div>
-          <div v-else class="divide-y">
-            <router-link
-              v-for="product in recentProducts"
-              :key="product.id"
-              :to="{ name: 'products.detail', params: { id: product.id } }"
-              class="flex items-center gap-3 py-3"
-            >
-              <img v-if="product.image" :src="product.image" class="w-9 h-9 object-cover rounded" />
-              <div class="flex-1">
-                <div class="font-semibold text-gray-800 text-sm">{{ product.name }}</div>
-                <div class="text-xs text-gray-400">{{ product.barcode || "-" }}</div>
-              </div>
-              <div class="text-sm font-semibold">{{ formatPrice(product.price) }}</div>
-            </router-link>
-          </div>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h3 class="font-semibold text-gray-800">{{ t("dash.recent-products") }}</h3>
+          <router-link to="/products" class="text-sm text-amber-600 hover:underline font-medium">{{ t("dash.view-all") }}</router-link>
         </div>
+        <div class="p-2">
+          <div v-if="recentProducts.length === 0" class="text-gray-400 text-center py-8 text-sm">{{ t("dash.no-products") }}</div>
+          <router-link
+            v-for="product in recentProducts"
+            :key="product.id"
+            :to="{ name: 'products.detail', params: { id: product.id } }"
+            class="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 rounded-lg transition"
+          >
+            <product-image :src="product.image" size="sm" />
+            <div class="flex-1 min-w-0">
+              <div class="font-semibold text-gray-800 text-sm truncate">{{ product.name }}</div>
+              <div class="text-xs text-gray-400">{{ product.barcode || "—" }}</div>
+            </div>
+            <div class="text-sm font-semibold text-gray-700">{{ formatPrice(product.price) }}</div>
+          </router-link>
+        </div>
+      </div>
 
-        <div class="bg-white shadow rounded-xl p-5">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="font-semibold text-gray-700">Son Siparişler</h2>
-            <div class="flex gap-3">
-              <router-link to="/sales" class="text-blue-600 text-sm hover:underline">Satış Yap</router-link>
-              <router-link to="/orders" class="text-blue-600 text-sm hover:underline">Tümünü Gör</router-link>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <h3 class="font-semibold text-gray-800">{{ t("dash.recent-orders") }}</h3>
+          <router-link to="/orders" class="text-sm text-amber-600 hover:underline font-medium">{{ t("dash.view-all") }}</router-link>
+        </div>
+        <div class="p-2">
+          <div v-if="recentOrders.length === 0" class="text-gray-400 text-center py-8 text-sm">{{ t("dash.no-orders") }}</div>
+          <div v-for="order in recentOrders" :key="order.id" class="flex items-center gap-3 px-3 py-2.5">
+            <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+              <i class="pi pi-receipt"></i>
             </div>
-          </div>
-          <div v-if="recentOrders.length === 0" class="text-gray-400 text-center py-6 text-sm">Henüz sipariş yok.</div>
-          <div v-else class="divide-y">
-            <div v-for="order in recentOrders" :key="order.id" class="py-3">
-              <div class="flex items-center justify-between">
-                <div class="font-semibold text-gray-800 text-sm">#{{ order.id }} - {{ order.items.length }} ürün</div>
-                <div class="text-sm font-semibold">{{ formatPrice(order.total) }}</div>
-              </div>
-              <div class="text-xs text-gray-400 mt-1">{{ formatDate(order.created_at) }}</div>
+            <div class="flex-1">
+              <div class="font-semibold text-gray-800 text-sm">#{{ order.id }}</div>
+              <div class="text-xs text-gray-400">{{ formatDate(order.created_at) }}</div>
             </div>
+            <div class="text-sm font-semibold text-gray-700">{{ formatPrice(order.total) }}</div>
           </div>
         </div>
       </div>
@@ -74,9 +71,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, computed, onMounted } from "vue"
+import { useRouter } from "vue-router"
+import Button from "primevue/button"
+import ProductImage from "../../components/ProductImage.vue"
 import { user } from "../../composables/useAuth"
+import { t, getLocale } from "../../i18n"
 import api from "../../api"
+
+const router = useRouter()
 
 const stats = ref({
   totalProducts: 0,
@@ -86,6 +89,44 @@ const stats = ref({
 })
 const recentProducts = ref([])
 const recentOrders = ref([])
+
+const isAdmin = computed(() => user.value?.role === "admin")
+
+const statCards = computed(() => [
+  {
+    labelKey: "dash.total-products",
+    icon: "pi-box",
+    iconClass: "bg-blue-50 text-blue-600",
+    value: stats.value.totalProducts,
+  },
+  {
+    labelKey: "dash.total-stock",
+    icon: "pi-database",
+    iconClass: "bg-emerald-50 text-emerald-600",
+    value: `${stats.value.totalStock} ${t("dash.unit")}`,
+  },
+  {
+    labelKey: "dash.total-orders",
+    icon: "pi-receipt",
+    iconClass: "bg-amber-50 text-amber-600",
+    value: stats.value.totalOrders,
+  },
+  {
+    labelKey: "dash.stock-value",
+    icon: "pi-wallet",
+    iconClass: "bg-purple-50 text-purple-600",
+    value: formatPrice(stats.value.stockValue),
+  },
+])
+
+const formattedToday = computed(() =>
+  new Intl.DateTimeFormat(getLocale() === "en" ? "en-US" : "tr-TR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date())
+)
 
 async function loadData() {
   const [productsRes, ordersRes] = await Promise.all([api.get("/products"), api.get("/orders")])
@@ -105,11 +146,17 @@ async function loadData() {
 }
 
 function formatPrice(value) {
-  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value)
+  return new Intl.NumberFormat(getLocale() === "en" ? "en-US" : "tr-TR", { style: "currency", currency: "TRY" }).format(value)
 }
 
 function formatDate(value) {
-  return new Date(value).toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })
+  return new Date(value).toLocaleDateString(getLocale() === "en" ? "en-US" : "tr-TR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
 }
 
 onMounted(loadData)

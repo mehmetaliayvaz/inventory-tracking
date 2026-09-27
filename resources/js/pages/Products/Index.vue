@@ -1,78 +1,92 @@
 <template>
-  <div class="page-wrapper">
-    <div class="container">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-800">Ürünler</h1>
-          <p class="text-gray-500 text-sm mt-1">{{ products.length }} ürün</p>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700">{{ t("products.title") }}</h2>
+        <p class="text-sm text-gray-500 mt-0.5">{{ t("products.count", { count: products.length }) }}</p>
+      </div>
+      <Button v-if="isAdmin" :label="t('products.add')" icon="pi pi-plus" @click="router.push({ name: 'products.add' })" />
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+      <div class="p-4 border-b border-gray-100">
+        <div class="relative max-w-md">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <InputText v-model="searchQuery" :placeholder="t('products.search')" class="w-full pl-9" @keydown.enter.prevent="loadProducts" />
         </div>
-        <Button label="Ürün Ekle" icon="pi pi-plus" @click="router.push({ name: 'products.add' })" />
       </div>
 
-      <div class="bg-white shadow rounded-xl p-4">
-        <div class="flex items-center gap-3 mb-4">
-          <div class="relative">
-            <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <InputText v-model="searchQuery" placeholder="Ürün adı, barkod veya marka ara..." class="w-96 pl-9" />
-          </div>
-          <Button v-if="searchQuery" label="Ara" @click="loadProducts" />
-        </div>
+      <div v-if="loading" class="py-16 text-center text-gray-500">
+        <i class="pi pi-spin pi-spinner mr-2"></i>{{ t("common.loading") }}
+      </div>
 
-        <div v-if="loading" class="py-10 text-center text-gray-500">Yükleniyor...</div>
+      <DataTable
+        v-else
+        :value="products"
+        paginator
+        :rows="10"
+        :rowsPerPageOptions="[10, 20, 50]"
+        dataKey="id"
+        class="p-datatable-sm"
+        @row-click="(event) => openProduct(event.data.id)"
+      >
+        <Column field="image" header="" style="width: 70px">
+          <template #body="{ data }">
+            <product-image :src="data.image" size="sm" />
+          </template>
+        </Column>
+        <Column :header="t('products.name')">
+          <template #body="{ data }">
+            <span class="font-semibold text-gray-800">{{ data.name }}</span>
+            <span v-if="data.brand" class="block text-xs text-gray-400">{{ data.brand?.name }}</span>
+          </template>
+        </Column>
+        <Column :header="t('products.barcode')" style="width: 150px">
+          <template #body="{ data }">
+            <span class="text-gray-600 text-sm">{{ data.barcode || "—" }}</span>
+          </template>
+        </Column>
+        <Column :header="t('products.category')" style="width: 130px">
+          <template #body="{ data }">
+            <Tag v-if="data.category" :value="data.category.name" severity="secondary" />
+            <span v-else class="text-gray-300">{{ t("common.none") }}</span>
+          </template>
+        </Column>
+        <Column :header="t('products.price')" style="width: 120px" :sortable="true">
+          <template #body="{ data }">
+            <span class="font-medium">{{ formatPrice(data.price) }}</span>
+          </template>
+        </Column>
+        <Column :header="t('products.stock')" style="width: 160px" :sortable="true">
+          <template #body="{ data }">
+            <div class="flex items-center gap-2" @click.stop>
+              <InputNumber v-if="isAdmin" v-model="data.stock" :useGrouping="false" class="w-24" @change="() => updateStock(data)" />
+              <span v-else class="font-semibold" :class="data.stock === 0 ? 'text-red-500' : 'text-gray-800'">{{ data.stock }}</span>
+              <i v-if="data.stockSaving" class="pi pi-spin pi-spinner text-gray-400"></i>
+              <i v-else-if="data.stockSaved" class="pi pi-check text-green-500"></i>
+            </div>
+          </template>
+        </Column>
+        <Column :header="t('common.actions')" style="width: 90px">
+          <template #body="{ data }">
+            <div class="flex gap-1" @click.stop>
+              <Button icon="pi pi-eye" class="p-button-text p-button-sm" @click="openProduct(data.id)" />
+              <Button v-if="isAdmin" icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger" @click="deleteProduct(data)" />
+            </div>
+          </template>
+        </Column>
+      </DataTable>
 
-        <DataTable v-else :value="products" paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]" :loading="loading" dataKey="id" @row-click="(event) => openProduct(event.data.id)">
-          <Column field="image" header="" style="width: 70px">
-            <template #body="{ data }">
-              <img v-if="data.image" :src="data.image" alt="" class="w-10 h-10 object-cover rounded" />
-              <div v-else class="w-10 h-10 rounded bg-gray-100 flex items-center justify-center text-gray-400">
-                <i class="pi pi-box"></i>
-              </div>
-            </template>
-          </Column>
-          <Column field="name" header="Ürün Adı">
-            <template #body="{ data }">
-              <span class="font-semibold text-gray-800">{{ data.name }}</span>
-              <span v-if="data.brand" class="block text-xs text-gray-400">{{ data.brand }}</span>
-            </template>
-          </Column>
-          <Column field="barcode" header="Barkod" style="width: 140px" />
-          <Column field="price" header="Fiyat" style="width: 110px">
-            <template #body="{ data }">
-              {{ formatPrice(data.price) }}
-            </template>
-          </Column>
-          <Column field="stock" header="Stok" style="width: 150px">
-            <template #body="{ data }">
-              <div class="flex items-center gap-2" @click.stop>
-                <InputNumber v-model="data.stock" :useGrouping="false" class="w-24" inputId="integeronly" @change="() => updateStock(data)" />
-                <i v-if="data.stockSaving" class="pi pi-spin pi-spinner text-gray-400"></i>
-                <i v-else-if="data.stockSaved" class="pi pi-check text-green-500"></i>
-              </div>
-            </template>
-          </Column>
-          <Column field="category" header="Kategori" style="width: 130px">
-            <template #body="{ data }">
-              <Tag v-if="data.category" :value="data.category" severity="secondary" />
-              <span v-else class="text-gray-300">-</span>
-            </template>
-          </Column>
-          <Column header="" style="width: 60px">
-            <template #body="{ data }">
-              <Button icon="pi pi-angle-right" class="p-button-text" @click.stop="openProduct(data.id)" />
-            </template>
-          </Column>
-        </DataTable>
-
-        <div v-if="!loading && products.length === 0" class="py-10 text-center text-gray-500">
-          Ürün bulunamadı.
-        </div>
+      <div v-if="!loading && products.length === 0" class="py-16 text-center text-gray-500">
+        <i class="pi pi-box text-4xl text-gray-300 block mb-3"></i>
+        {{ t("products.empty") }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue"
+import { ref, computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import Button from "primevue/button"
 import InputText from "primevue/inputtext"
@@ -81,8 +95,11 @@ import DataTable from "primevue/datatable"
 import Column from "primevue/column"
 import Tag from "primevue/tag"
 import { useToast } from "primevue/usetoast"
+import ProductImage from "../../components/ProductImage.vue"
 import api from "../../api"
 import { useBarcodeScanner } from "../../composables/useBarcodeScanner"
+import { user } from "../../composables/useAuth"
+import { t, getLocale } from "../../i18n"
 
 const router = useRouter()
 const toast = useToast()
@@ -91,13 +108,15 @@ const products = ref([])
 const loading = ref(false)
 const searchQuery = ref("")
 
+const isAdmin = computed(() => user.value?.role === "admin")
+
 async function loadProducts() {
   loading.value = true
   try {
     const { data } = await api.get("/products", { params: { q: searchQuery.value } })
     products.value = data.data.map((p) => ({ ...p, stockSaving: false, stockSaved: false }))
   } catch (error) {
-    toast.add({ severity: "error", summary: "Hata", detail: "Ürünler yüklenemedi.", life: 3000 })
+    toast.add({ severity: "error", summary: t("products.title"), detail: t("products.load-error"), life: 3000 })
   } finally {
     loading.value = false
   }
@@ -118,9 +137,19 @@ async function updateStock(product) {
       product.stockSaved = false
     }, 1500)
   } catch (error) {
-    toast.add({ severity: "error", summary: "Hata", detail: "Stok güncellenemedi.", life: 3000 })
+    toast.add({ severity: "error", summary: t("products.title"), detail: t("products.stock-error"), life: 3000 })
   } finally {
     product.stockSaving = false
+  }
+}
+
+async function deleteProduct(product) {
+  try {
+    await api.delete(`/products/${product.id}`)
+    toast.add({ severity: "success", summary: t("products.title"), detail: t("product.deleted"), life: 3000 })
+    loadProducts()
+  } catch (error) {
+    toast.add({ severity: "error", summary: t("products.title"), detail: t("settings.error"), life: 3000 })
   }
 }
 
@@ -129,7 +158,7 @@ function openProduct(id) {
 }
 
 function formatPrice(value) {
-  return new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value)
+  return new Intl.NumberFormat(getLocale() === "en" ? "en-US" : "tr-TR", { style: "currency", currency: "TRY" }).format(value)
 }
 
 onMounted(loadProducts)

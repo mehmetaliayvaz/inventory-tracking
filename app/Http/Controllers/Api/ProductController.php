@@ -10,15 +10,20 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::where('user_id', $request->user()->id);
+        $query = Product::with('category', 'brand')
+            ->where('company_id', $request->user()->company_id);
 
         if ($request->has('q') && $request->q) {
             $q = $request->q;
             $query->where(function ($builder) use ($q) {
                 $builder->where('name', 'like', "%{$q}%")
                     ->orWhere('barcode', 'like', "%{$q}%")
-                    ->orWhere('brand', 'like', "%{$q}%")
-                    ->orWhere('category', 'like', "%{$q}%");
+                    ->orWhereHas('brand', function ($brandQuery) use ($q) {
+                        $brandQuery->where('name', 'like', "%{$q}%");
+                    })
+                    ->orWhereHas('category', function ($categoryQuery) use ($q) {
+                        $categoryQuery->where('name', 'like', "%{$q}%");
+                    });
             });
         }
 
@@ -37,23 +42,27 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'barcode' => 'nullable|string|max:64',
-            'brand' => 'nullable|string|max:255',
-            'category' => 'nullable|string|max:255',
             'image' => 'nullable|string|max:1024',
+            'category_id' => 'nullable|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
         ]);
 
         $product = new Product($validated);
         $product->user_id = $request->user()->id;
+        $product->company_id = $request->user()->company_id;
         $product->save();
 
         return response()->json([
-            'data' => $product
+            'data' => $product->load('category', 'brand')
         ], 201);
     }
 
     public function show(Request $request, string $id)
     {
-        $product = Product::where('user_id', $request->user()->id)->find($id);
+        $product = Product::with('category', 'brand')
+            ->where('company_id', $request->user()->company_id)
+            ->find($id);
+
         if ($product) {
             return response()->json([
                 'data' => $product
@@ -67,7 +76,7 @@ class ProductController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $product = Product::where('user_id', $request->user()->id)->find($id);
+        $product = Product::where('company_id', $request->user()->company_id)->find($id);
         if (!$product) {
             return response()->json([
                 'message' => 'Product not found'
@@ -80,21 +89,21 @@ class ProductController extends Controller
             'price' => 'sometimes|numeric|min:0',
             'stock' => 'sometimes|integer|min:0',
             'barcode' => 'nullable|string|max:64',
-            'brand' => 'nullable|string|max:255',
-            'category' => 'nullable|string|max:255',
             'image' => 'nullable|string|max:1024',
+            'category_id' => 'nullable|exists:categories,id',
+            'brand_id' => 'nullable|exists:brands,id',
         ]);
 
         $product->update($validated);
 
         return response()->json([
-            'data' => $product
+            'data' => $product->load('category', 'brand')
         ], 200);
     }
 
     public function destroy(Request $request, string $id)
     {
-        $product = Product::where('user_id', $request->user()->id)->find($id);
+        $product = Product::where('company_id', $request->user()->company_id)->find($id);
         if (!$product) {
             return response()->json([
                 'message' => 'Product not found'

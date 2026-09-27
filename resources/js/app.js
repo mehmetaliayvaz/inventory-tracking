@@ -5,6 +5,7 @@ import router from "./router"
 import PrimeVue from "primevue/config"
 import ToastService from "primevue/toastservice"
 import "primevue/resources/themes/aura-light-amber/theme.css"
+import "primeicons/primeicons.css"
 
 const app = createApp(App)
 

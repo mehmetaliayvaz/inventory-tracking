@@ -13,7 +13,7 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $orders = Order::with('items')
-            ->where('user_id', $request->user()->id)
+            ->where('company_id', $request->user()->company_id)
             ->orderBy('id', 'desc')
             ->get();
 
@@ -26,7 +26,7 @@ class OrderController extends Controller
     {
         $validated = $request->validate([
             'items' => 'required|array|min:1',
-            'items.*.product_id' => 'nullable|exists:products,id',
+            'items.*.product_id' => 'nullable|integer',
             'items.*.name' => 'required|string|max:255',
             'items.*.barcode' => 'nullable|string|max:64',
             'items.*.price' => 'required|numeric|min:0',
@@ -40,6 +40,7 @@ class OrderController extends Controller
 
             $order = Order::create([
                 'user_id' => $request->user()->id,
+                'company_id' => $request->user()->company_id,
                 'total' => $total,
             ]);
 
@@ -53,7 +54,7 @@ class OrderController extends Controller
                 ]);
 
                 if (!empty($item['product_id'])) {
-                    $product = Product::where('user_id', $request->user()->id)
+                    $product = Product::where('company_id', $request->user()->company_id)
                         ->find($item['product_id']);
                     if ($product && $product->stock >= $item['quantity']) {
                         $product->decrement('stock', $item['quantity']);

@@ -9,7 +9,7 @@
 import { computed, onMounted } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import DefaultLayout from "./layouts/DefaultLayout.vue"
-import { loadStoredUser } from "./composables/useAuth"
+import { loadStoredUser, fetchUser } from "./composables/useAuth"
 
 const route = useRoute()
 const router = useRouter()
@@ -18,6 +18,9 @@ const showLayout = computed(() => !route.meta.public)
 
 onMounted(() => {
   loadStoredUser()
+  if (localStorage.getItem("auth_token")) {
+    fetchUser().catch(() => {})
+  }
   window.addEventListener("auth:unauthorized", () => {
     if (!route.meta.public) {
       router.push({ name: "login" })
