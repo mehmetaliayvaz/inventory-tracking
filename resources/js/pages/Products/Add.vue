@@ -77,6 +77,7 @@ import Textarea from "primevue/textarea"
 import { useToast } from "primevue/usetoast"
 import api from "../../api"
 import { useBarcodeLookup } from "../../composables/useBarcodeLookup"
+import { useBarcodeScanner } from "../../composables/useBarcodeScanner"
 
 const router = useRouter()
 const toast = useToast()
@@ -96,13 +97,19 @@ const saving = ref(false)
 const autoFilled = ref(false)
 
 let lookupTimer = null
+const lastLookedCode = ref("")
 
 watch(
   () => form.barcode,
   (value) => {
     clearTimeout(lookupTimer)
     const code = String(value || "").trim()
-    if (code.length >= 8 && code.length <= 14 && /^\d+$/.test(code)) {
+    if (
+      code.length >= 8 &&
+      code.length <= 14 &&
+      /^\d+$/.test(code) &&
+      lastLookedCode.value !== code
+    ) {
       lookupTimer = setTimeout(() => {
         if (code === String(form.barcode).trim()) {
           runLookup(code)
@@ -113,6 +120,8 @@ watch(
 )
 
 async function runLookup(code) {
+  if (lastLookedCode.value === code) return
+  lastLookedCode.value = code
   autoFilled.value = false
   const result = await lookup.lookupBarcode(code)
   if (result) {
@@ -132,6 +141,11 @@ function handleLookup() {
   if (!code) return
   runLookup(code)
 }
+
+useBarcodeScanner((code) => {
+  form.barcode = code
+  handleLookup()
+})
 
 async function handleSubmit() {
   if (!form.name) {

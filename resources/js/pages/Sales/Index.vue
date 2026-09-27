@@ -123,6 +123,7 @@ import InputNumber from "primevue/inputnumber"
 import { useToast } from "primevue/usetoast"
 import api from "../../api"
 import ReceiptPreview from "./partials/ReceiptPreview.vue"
+import { useBarcodeScanner } from "../../composables/useBarcodeScanner"
 
 const toast = useToast()
 
@@ -161,6 +162,11 @@ async function scanBarcode() {
     scanMessage.value = { type: "error", text: "Ürün aranırken hata oluştu." }
   }
 }
+
+useBarcodeScanner((code) => {
+  scanCode.value = code
+  scanBarcode()
+})
 
 async function searchProducts() {
   const q = String(searchQuery.value || "").trim()

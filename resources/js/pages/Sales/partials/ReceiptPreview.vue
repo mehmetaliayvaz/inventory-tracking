@@ -1,17 +1,17 @@
 <template>
   <div class="receipt bg-white text-gray-900">
-    <div class="text-center mb-2">
-      <div style="font-size: 22px; font-weight: bold">STOK-TAKİP</div>
-      <div>Satış Fişi</div>
+    <div class="text-center text-lg mb-2">
+      <div class="text-2xl font-bold">STOK-TAKİP</div>
+      <div>Sipariş Bilgisi</div>
       <div>#{{ order.id }}</div>
       <div>{{ formatDate(order.created_at) }}</div>
     </div>
 
     <div class="dashed-line"></div>
 
-    <div v-for="item in order.items" :key="item.id" class="mb-1">
-      <div class="font-semibold">{{ item.name }}</div>
-      <div class="flex justify-between">
+    <div v-for="item in order.items" :key="item.id" class="mb-4">
+      <div class="text-xl font-bold">{{ item.name }}</div>
+      <div class="flex justify-between text-lg font-semibold">
         <span>{{ item.quantity }} x {{ formatPrice(item.price) }}</span>
         <span>{{ formatPrice(item.price * item.quantity) }}</span>
       </div>
@@ -51,7 +51,7 @@ function formatDate(value) {
 
 <style scoped>
 .receipt {
-  width: 100%;
+  width: 64mm;
 }
 .dashed-line {
   border-top: 1px dashed #9ca3af;

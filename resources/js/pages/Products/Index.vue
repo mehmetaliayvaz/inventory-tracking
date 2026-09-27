@@ -81,8 +81,8 @@ import DataTable from "primevue/datatable"
 import Column from "primevue/column"
 import Tag from "primevue/tag"
 import { useToast } from "primevue/usetoast"
-import Toast from "primevue/toast"
 import api from "../../api"
+import { useBarcodeScanner } from "../../composables/useBarcodeScanner"
 
 const router = useRouter()
 const toast = useToast()
@@ -102,6 +102,11 @@ async function loadProducts() {
     loading.value = false
   }
 }
+
+useBarcodeScanner((code) => {
+  searchQuery.value = code
+  loadProducts()
+})
 
 async function updateStock(product) {
   product.stockSaving = true
