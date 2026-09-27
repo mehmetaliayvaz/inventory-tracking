@@ -16,3 +16,28 @@
 .container {
   @apply max-w-[1400px];
 }
+
+@page {
+  size: 58mm auto;
+  margin: 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #print-receipt,
+  #print-receipt * {
+    visibility: visible;
+  }
+
+  #print-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 58mm;
+    padding: 2mm;
+    box-sizing: border-box;
+  }
+}
