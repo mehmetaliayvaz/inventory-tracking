@@ -37,7 +37,7 @@
     left: 0;
     top: 0;
     width: 58mm;
-    padding: 2mm;
+    padding: 0;
     box-sizing: border-box;
   }
 }
