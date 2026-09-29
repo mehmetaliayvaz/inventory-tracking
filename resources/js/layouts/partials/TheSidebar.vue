@@ -4,7 +4,7 @@
     :class="open ? 'translate-x-0' : '-translate-x-full'"
   >
     <div class="h-16 flex items-center gap-3 px-5 border-b border-white/10 shrink-0">
-      <div class="w-9 h-9 rounded-lg bg-amber-400 flex items-center justify-center text-slate-900 font-extrabold text-lg shrink-0">S</div>
+      <div class="w-9 h-9 rounded-lg bg-amber-400 flex items-center justify-center text-slate-900 font-extrabold text-lg shrink-0">{{ appInitial }}</div>
       <div class="min-w-0">
         <div class="font-bold text-lg tracking-tight truncate">{{ t("app.name") }}</div>
         <div v-if="user?.company" class="text-xs text-gray-400 truncate">{{ user.company.name }}</div>
@@ -62,6 +62,8 @@ const route = useRoute()
 const router = useRouter()
 
 const isAdmin = computed(() => user.value?.role === "admin")
+
+const appInitial = computed(() => (t("app.name").trim().charAt(0) || "E").toUpperCase())
 
 const initials = computed(() => {
   const name = user.value?.name || ""

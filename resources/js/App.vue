@@ -6,15 +6,24 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue"
+import { computed, onMounted, watch } from "vue"
 import { useRoute, useRouter } from "vue-router"
 import DefaultLayout from "./layouts/DefaultLayout.vue"
 import { loadStoredUser, fetchUser } from "./composables/useAuth"
+import { t, locale } from "./i18n"
 
 const route = useRoute()
 const router = useRouter()
 
 const showLayout = computed(() => !route.meta.public)
+
+function applyTitle() {
+  const appName = t("app.name")
+  const pageTitle = route.meta.titleKey ? t(route.meta.titleKey) : ""
+  document.title = pageTitle && pageTitle !== appName ? `${pageTitle} · ${appName}` : appName
+}
+
+watch([locale, route], applyTitle, { immediate: true })
 
 onMounted(() => {
   loadStoredUser()

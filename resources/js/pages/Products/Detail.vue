@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-3xl">
+  <div class="max-w-3xl mx-auto">
     <div class="flex items-center gap-3 mb-6">
       <Button icon="pi pi-arrow-left" class="p-button-text p-button-rounded" @click="router.push({ name: 'products' })" />
       <h2 class="text-lg font-semibold text-gray-800">{{ t("product.detail.title") }}</h2>

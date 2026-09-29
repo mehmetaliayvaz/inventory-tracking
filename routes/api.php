@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::middleware('admin')->group(function () {
         Route::post('/products', [ProductController::class, 'store']);
+        Route::post('/products/upload-image', [ProductController::class, 'uploadImage']);
         Route::put('/products/{id}', [ProductController::class, 'update']);
         Route::delete('/products/{id}', [ProductController::class, 'destroy']);
 
